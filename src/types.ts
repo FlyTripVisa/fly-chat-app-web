@@ -18,6 +18,6 @@ export interface Env {
  * Represents a chat message.
  */
 export interface ChatMessage {
-	role: "system" | "user" | "assistant";
+	role: "system" | "admin" | "assistant";
 	content: string;
 }
