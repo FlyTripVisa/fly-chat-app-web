@@ -69,4 +69,21 @@ async function handleAgentAnalysis(request: Request, env: any): Promise<Response
 	return new Response(JSON.stringify({ analysis: text }), {
 		headers: { "content-type": "application/json" },
 	});
+// রানটাইম ডেটাবেস আপডেট হ্যান্ডলার (Admin API)
+async function handleAdminSave(request: Request, env: Env): Promise<Response> {
+    if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+    try {
+        const { key, value } = await request.json() as { key: string, value: string };
+
+        // সরাসরি KV-তে ডেটা রাইট করা (এখানেই আপনার ডেটাবেস ম্যানেজমেন্ট হচ্ছে)
+        await env.KV.put(key, JSON.stringify(value));
+
+        return new Response(JSON.stringify({ success: true, message: `Key ${key} updated!` }), {
+            headers: { "content-type": "application/json" }
+        });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: "Failed to save" }), { status: 500 });
+    }
 }
+
