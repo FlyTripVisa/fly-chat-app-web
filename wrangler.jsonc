@@ -3,7 +3,10 @@
 	"name": "fly-chat-app-web",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-06-23",
-	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./public"
@@ -11,26 +14,38 @@
 	"observability": {
 		"enabled": true
 	},
-	"ai": {
-		"binding": "AI"
-	},
 	"vars": {
 		"ENV": "production"
 	},
 	"kv_namespaces": [
 		{
-			"binding": "PROJECT_TEMPLATES",
+			"binding": "KV",
 			"id": "3e69bbeb60724f09b056e6a22d4f1c2f",
 			"preview_id": "YOUR_PREVIEW_KV_ID"
+		},
+		{
+			"binding": "PROJECT_TEMPLATES",
+			"id": "3e69bbeb60724f09b056e6a22d4f1c2f"
 		}
 	],
+	"ai": {
+		"binding": "AI"
+	},
 	"durable_objects": {
 		"bindings": [
-			{ "name": "PROJECT_MANAGER", "class_name": "ProjectManager" }
+			{
+				"name": "PROJECT_MANAGER",
+				"class_name": "ProjectManager"
+			}
 		]
 	},
 	"migrations": [
-		{ "tag": "v1", "new_classes": ["ProjectManager"] }
+		{
+			"tag": "v1",
+			"new_classes": [
+				"ProjectManager"
+			]
+		}
 	],
 	"upload_source_maps": true
 }
