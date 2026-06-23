@@ -19,9 +19,14 @@ export default {
 			return handleChatRequest(request, env);
 		}
 
-		// ৩. প্রজেক্ট অ্যানালাইসিস এন্ডপয়েন্ট (AI Gateway)
+		// ৩. প্রজেক্ট অ্যানালাইসিস এন্ডপয়েন্ট
 		if (url.pathname === "/api/agent/analyze" && request.method === "POST") {
 			return handleAgentAnalysis(request, env);
+		}
+
+		// ৪. রানটাইম অ্যাডমিন এন্ডপয়েন্ট
+		if (url.pathname === "/api/admin/save" && request.method === "POST") {
+			return handleAdminSave(request, env);
 		}
 
 		return new Response("Not found", { status: 404 });
@@ -31,23 +36,12 @@ export default {
 // চ্যাট হ্যান্ডলার (SSE Streaming)
 async function handleChatRequest(request: Request, env: Env): Promise<Response> {
 	const { messages = [] } = await request.json() as { messages: ChatMessage[] };
-	
-	const stream = await env.AI.run(MODEL_ID, {
-		messages,
-		stream: true,
-	}, {
-		gateway: {
-			id: "default", // আপনার দেওয়া গেটওয়ে নাম
-			skipCache: false,
-		},
+	const stream = await env.AI.run(MODEL_ID, { messages, stream: true }, {
+		gateway: { id: "default", skipCache: false },
 	});
 
 	return new Response(stream, {
-		headers: {
-			"content-type": "text/event-stream; charset=utf-8",
-			"cache-control": "no-cache",
-			connection: "keep-alive",
-		},
+		headers: { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache" },
 	});
 }
 
@@ -58,27 +52,20 @@ async function handleAgentAnalysis(request: Request, env: any): Promise<Response
 		gateway: "default",
 		apiKey: env.CF_AIG_TOKEN,
 	});
-	
 	const unified = createUnified();
-
 	const { text } = await generateText({
 		model: aigateway(unified("workers-ai/" + MODEL_ID)),
-		prompt: "Analyze the current project structure and suggest improvements for the templates.",
+		prompt: "Analyze the current project structure and suggest improvements.",
 	});
+	return new Response(JSON.stringify({ analysis: text }), { headers: { "content-type": "application/json" } });
+}
 
-	return new Response(JSON.stringify({ analysis: text }), {
-		headers: { "content-type": "application/json" },
-	});
 // রানটাইম ডেটাবেস আপডেট হ্যান্ডলার (Admin API)
 async function handleAdminSave(request: Request, env: Env): Promise<Response> {
     if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-
     try {
         const { key, value } = await request.json() as { key: string, value: string };
-
-        // সরাসরি KV-তে ডেটা রাইট করা (এখানেই আপনার ডেটাবেস ম্যানেজমেন্ট হচ্ছে)
         await env.KV.put(key, JSON.stringify(value));
-
         return new Response(JSON.stringify({ success: true, message: `Key ${key} updated!` }), {
             headers: { "content-type": "application/json" }
         });
@@ -86,4 +73,3 @@ async function handleAdminSave(request: Request, env: Env): Promise<Response> {
         return new Response(JSON.stringify({ error: "Failed to save" }), { status: 500 });
     }
 }
-
